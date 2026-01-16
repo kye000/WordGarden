@@ -9,13 +9,16 @@ import SwiftUI
 struct ContentView: View {
     @State private var wordsGuessed = 0
        @State private var wordsMissed = 0
-       @State private var wordsToGuess = ["SWIFT", "DOG", "CAT"] // All Caps
        @State private var gameStatusMessage = "How many Guesses to Uncover the Hidden Word?"
-       @State private var currentWord = 0 // index in wordToGuess
+       @State private var currentWordIndex = 0 // index in wordToGuess
+    @State private var wordToGuess = ""
+    @State private var revealedWord = ""
+    @State private var  lettersGuessed = ""
        @State private var guessedLetter = ""
        @State private var imageName = "flower8"
        @State private var playAgainHidden = true
     @FocusState private var textFieldIsFocused: Bool
+    private let wordsToGuess = ["SWIFT", "DOG", "CAT"] // All Caps
        
        var body: some View {
            VStack {
@@ -39,8 +42,8 @@ struct ContentView: View {
                    .multilineTextAlignment(.center)
                    .padding()
                
-               //TODO: Switch to wordsToGuessed[currentWord]
-               Text("_____")
+               //TODO: Switch to wordsToGuessed[currentWordIndex]
+               Text(revealedWord)
                    .font(.title)
                
                if playAgainHidden {
@@ -64,10 +67,17 @@ struct ContentView: View {
                                guessedLetter = String(lastChar).uppercased()
                            }
                            .focused($textFieldIsFocused)
+                           .onSubmit {
+                               // As long as guessedLetter is not an empty String we can continue, otherwise don't do anything
+                               guard guessedLetter != "" else {
+                                   return
+                               }
+                               guessALetter()
+                           }
                        
                        Button("Guess a Letter:") {
-                           //TODO: Guess  Letter button action here
-                           textFieldIsFocused = false
+                           guessALetter()
+                           
                        }
                        .buttonStyle(.bordered)
                        .tint(.mint)
@@ -89,7 +99,20 @@ struct ContentView: View {
                    .scaledToFit()
            }
            .ignoresSafeArea(edges: .bottom)
+           .onAppear {
+               wordToGuess = wordsToGuess[currentWordIndex]
+               revealedWord = "_" + String(repeating: " _", count: wordToGuess.count-1)
+           }
        }
+    
+    func guessALetter() {
+        textFieldIsFocused = false
+        lettersGuessed = lettersGuessed + guessedLetter
+        revealedWord = wordToGuess.map{ letter in
+            lettersGuessed.contains(letter) ? "\(letter)" : "_"
+        }.joined(separator: " ")
+        guessedLetter = ""
+    }
    }
 #Preview {
     ContentView()
